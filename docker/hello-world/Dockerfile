@@ -1,10 +1,10 @@
 FROM golang:1.12 as builder
 
-COPY go-src/go.mod /src/
+COPY go.mod /src/
 WORKDIR /src
 RUN go mod download
 
-COPY go-src /src
+COPY . /src
 RUN go build -v ./cmd/hello-world/...
 
 FROM ubuntu:18.04

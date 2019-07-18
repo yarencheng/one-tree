@@ -28,12 +28,12 @@ jobs:
           go test -v ./...
 
     - stage: build docker
-      name: 'hello world'
+      name: 'hello-world'
       script:
         - |
           docker build \
             --tag yarencheng/one-tree:hello-world-latest \
             --file docker/hello-world/Dockerfile \
-            .
+            go-src
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker push yarencheng/one-tree:hello-world-latest
