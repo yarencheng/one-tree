@@ -32,7 +32,8 @@ jobs:
       script:
         - |
           docker build \
-            --tag yarencheng/onr-tree:hello-world-latest
+            --tag yarencheng/one-tree:hello-world-latest \
             --file docker/hello-world/Dockerfile \
             .
-        - docker push yarencheng/onr-tree:hello-world-latest
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push yarencheng/one-tree:hello-world-latest
