@@ -1,6 +1,10 @@
 dist: trusty
 sudo: true
 
+cache:
+  directories:
+    - $HOME/go
+
 jobs:
   include:
     - stage: build
@@ -11,5 +15,12 @@ jobs:
           --volume /go:/go \
           golang:1.12 \
           go build -v ./...
+
     - stage: test
-      script: docker run -it --rm -w /src -v $PWD/go-src:/src -v /go:/go golang:1.12 go test -v ./...
+      script: |
+        docker run -it --rm \
+          --workdir /src \
+          --volume $PWD/go-src:/src \
+          --volume /go:/go \
+          golang:1.12 \
+          go test -v ./...
