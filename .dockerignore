@@ -1,0 +1,8 @@
+README.md
+
+docker/
+.dockerignore
+
+.git
+.gitattributes
+.gitignore
