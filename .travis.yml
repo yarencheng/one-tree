@@ -5,6 +5,8 @@ cache:
   directories:
     - $HOME/go
 
+fail_fast: true
+
 jobs:
   include:
     - stage: build
