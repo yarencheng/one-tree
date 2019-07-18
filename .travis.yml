@@ -8,6 +8,7 @@ cache:
 jobs:
   include:
     - stage: build
+      name: 'go'
       script: |
         docker run -it --rm \
           --workdir /src \
@@ -17,6 +18,7 @@ jobs:
           go build -v ./...
 
     - stage: test
+      name: 'go'
       script: |
         docker run -it --rm \
           --workdir /src \
@@ -24,3 +26,13 @@ jobs:
           --volume /go:/go \
           golang:1.12 \
           go test -v ./...
+
+    - stage: build docker
+      name: 'hello world'
+      script:
+        - |
+          docker build \
+            --tag yarencheng/onr-tree:hello-world-latest
+            --file docker/hello-world/Dockerfile \
+            .
+        - docker push yarencheng/onr-tree:hello-world-latest
