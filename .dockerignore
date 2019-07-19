@@ -6,3 +6,5 @@ docker/
 .git
 .gitattributes
 .gitignore
+
+protobuf/
