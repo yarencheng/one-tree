@@ -8,32 +8,13 @@ cache:
 jobs:
   include:
     - stage: build
-      name: 'go'
-      script: |
-        docker run -it --rm \
-          --workdir /src \
-          --volume $PWD/go-src:/src \
-          --volume /go:/go \
-          golang:1.12 \
-          go build -v ./...
+      script: make build
 
     - stage: test
-      name: 'go'
-      script: |
-        docker run -it --rm \
-          --workdir /src \
-          --volume $PWD/go-src:/src \
-          --volume /go:/go \
-          golang:1.12 \
-          go test -v ./...
+      script: make test
 
-    - stage: build docker
-      name: 'hello world'
+    - stage: images
       script:
-        - |
-          docker build \
-            --tag yarencheng/one-tree:hello-world-latest \
-            --file docker/hello-world/Dockerfile \
-            .
+        - make images
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker push yarencheng/one-tree:hello-world-latest
