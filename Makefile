@@ -33,7 +33,7 @@ go-build: protc-go
 		go build -v ./...
 
 .PHONY: go-test
-go-test:
+go-test: protc-go
 	docker run -it --rm \
 		--workdir /src \
 		--volume $(PWD)/go-src:/src \
