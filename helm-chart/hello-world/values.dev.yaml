@@ -1,0 +1,11 @@
+kafka:
+  external:
+    enabled: true
+  configurationOverrides:
+    "advertised.listeners": |-
+      EXTERNAL://192.168.99.103:$((31090 + ${KAFKA_BROKER_ID}))
+    "listener.security.protocol.map": |-
+      PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+  zookeeper:
+    service:
+      type: NodePort
