@@ -21,7 +21,7 @@ reset-permission:
 	sudo chown -R `id -u` $(HOME)/go
 
 .PHONY: images
-images: hello-world-image
+images: image-hello-world image-kafka-producer
 
 .PHONY: go-build
 go-build: protc-go
@@ -41,11 +41,18 @@ go-test: protc-go
 		golang:1.12 \
 		go test -v ./...
 
-.PHONY: hello-world-image
-hello-world-image:
+.PHONY: image-hello-world
+image-hello-world:
 	docker build \
 		--tag yarencheng/one-tree:hello-world-latest \
 		--file docker/hello-world/Dockerfile \
+		.
+
+.PHONY: image-kafka-producer
+image-kafka-producer:
+	docker build \
+		--tag yarencheng/one-tree:kafka-producer-latest \
+		--file docker/kafka-producer/Dockerfile \
 		.
 
 .PHONY: protc-go
