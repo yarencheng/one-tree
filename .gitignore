@@ -2,3 +2,5 @@ go-src/protobuf/*.pb.go
 
 ## helm
 **/charts/*.tgz
+
+**/.vscode/

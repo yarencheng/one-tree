@@ -17,6 +17,7 @@ type Server struct {
 	Echo    sarama.SyncProducer
 	wg      sync.WaitGroup
 	stopped chan struct{}
+	err     error
 }
 
 func New() (*Server, error) {
@@ -62,6 +63,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	if e != nil {
 		log.Warnf("Close server failed. err=[%s]", e)
 		return fmt.Errorf("Close server failed. err=[%s]", e)
+	} else if s.err != nil {
+		log.Warnf("Close server failed. err=[%s]", s.err)
+		return s.err
 	} else {
 		log.Infof("Server exited")
 	}
@@ -79,7 +83,8 @@ func (s *Server) Start() error {
 
 		defer func() {
 			if err := s.Echo.Close(); err != nil {
-				log.Errorf("Failed to shut down data collector cleanly. err: [%v]", err.Error())
+				s.err = fmt.Errorf("Failed to shut down producer cleanly. err: [%v]", err.Error())
+				log.Error(s.err)
 			}
 		}()
 

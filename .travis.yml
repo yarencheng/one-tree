@@ -18,3 +18,5 @@ jobs:
         - make images
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker push yarencheng/one-tree:hello-world-latest
+        - docker push yarencheng/one-tree:kafka-producer-latest
+        - docker push yarencheng/one-tree:kafka-consumergroup-latest

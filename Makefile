@@ -21,7 +21,7 @@ reset-permission:
 	sudo chown -R `id -u` $(HOME)/go
 
 .PHONY: images
-images: image-hello-world image-kafka-producer
+images: image-hello-world image-kafka-producer image-kafka-consumergroup
 
 .PHONY: go-build
 go-build: protc-go
@@ -55,6 +55,13 @@ image-kafka-producer:
 		--file docker/kafka-producer/Dockerfile \
 		.
 
+.PHONY: image-kafka-consumergroup
+image-kafka-consumergroup:
+	docker build \
+		--tag yarencheng/one-tree:kafka-consumergroup-latest \
+		--file docker/kafka-consumergroup/Dockerfile \
+		.
+
 .PHONY: protc-go
 protc-go:
 	mkdir -p go-src/protobuf
@@ -77,6 +84,8 @@ go-clean:
 .PHONY: delete-images
 delete-images:
 	docker rmi yarencheng/one-tree:hello-world-latest || true
+	docker rmi yarencheng/one-tree:kafka-producer-latest || true
+	docker rmi yarencheng/one-tree:kafka-consumergroup-latest || true
 
 .PHONY: protoc-clean
 protoc-clean: protoc-clean-go
