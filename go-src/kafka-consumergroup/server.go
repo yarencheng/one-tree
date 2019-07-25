@@ -2,8 +2,10 @@ package kafkaconsumergroup
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 
+	"github.com/gogo/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 
 	"context"
@@ -13,14 +15,22 @@ import (
 )
 
 type Server struct {
-	Echo   sarama.ConsumerGroup
-	wg     sync.WaitGroup
-	ctx    context.Context
-	cancel context.CancelFunc
-	err    error
+	consumer sarama.ConsumerGroup
+	wg       sync.WaitGroup
+	ctx      context.Context
+	cancel   context.CancelFunc
+	err      error
+	in       chan proto.Message
+	tvpe     reflect.Type
 }
 
-func New() (*Server, error) {
+func (s *Server) In() <-chan proto.Message {
+
+	return s.in
+
+}
+
+func New(payload proto.Message) (*Server, error) {
 
 	version, err := sarama.ParseKafkaVersion(config.Default.Kafka.Version)
 	if err != nil {
@@ -43,9 +53,11 @@ func New() (*Server, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	s := &Server{
-		Echo:   consumer,
-		ctx:    ctx,
-		cancel: cancel,
+		consumer: consumer,
+		ctx:      ctx,
+		cancel:   cancel,
+		in:       make(chan proto.Message, 10),
+		tvpe:     reflect.TypeOf(payload).Elem(),
 	}
 
 	return s, nil
@@ -92,19 +104,19 @@ func (s *Server) Start() error {
 
 		defer s.wg.Done()
 
-		consumer := Consumer{}
-
 		for {
-			if err := s.Echo.Consume(s.ctx, []string{config.Default.Kafka.Topic}, &consumer); err != nil {
+			if err := s.consumer.Consume(s.ctx, []string{config.Default.Kafka.Topic}, s); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 
 			defer func() {
-				if err := s.Echo.Close(); err != nil {
+				if err := s.consumer.Close(); err != nil {
 					s.err = fmt.Errorf("Failed to shut down consumer cleanly. err: [%v]", err.Error())
 					log.Error(s.err)
 				}
 			}()
+
+			defer close(s.in)
 
 			select {
 			case <-s.ctx.Done():
@@ -117,21 +129,30 @@ func (s *Server) Start() error {
 	return nil
 }
 
-type Consumer struct{}
-
-func (consumer *Consumer) Setup(sarama.ConsumerGroupSession) error {
+func (s *Server) Setup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
+func (s *Server) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (s *Server) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 
 	for message := range claim.Messages() {
-		log.Printf("received message [%s] from topic [%s] partition/offset [%d/%d]",
-			string(message.Value),
+
+		pb := reflect.New(s.tvpe).Interface().(proto.Message)
+
+		err := proto.Unmarshal(message.Value, pb)
+		if err != nil {
+			log.Warnf("Skip message due to [%s] ", err)
+			continue
+		}
+
+		s.in <- pb
+
+		log.Debugf("received message [%#v] from topic [%s] partition/offset [%d/%d]",
+			pb,
 			message.Topic,
 			message.Partition,
 			message.Offset,

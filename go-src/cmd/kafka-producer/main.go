@@ -14,6 +14,8 @@ import (
 	"flag"
 	"strings"
 
+	"yarencheng/one-tree/go-src/protobuf"
+
 	"github.com/Shopify/sarama"
 	log "github.com/sirupsen/logrus"
 )
@@ -49,6 +51,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	ticker := time.NewTicker(1 * time.Second)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				producer.Out() <- &protobuf.EchoEvent{
+					Message: time.Now().String(),
+				}
+			}
+		}
+	}()
 
 	quit := make(chan os.Signal)
 	// kill (no param) default send syscall.SIGTERM

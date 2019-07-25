@@ -3,8 +3,8 @@ package kafkaproducer
 import (
 	"fmt"
 	"sync"
-	"time"
 
+	"github.com/gogo/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 
 	"context"
@@ -14,10 +14,11 @@ import (
 )
 
 type Server struct {
-	Echo    sarama.SyncProducer
-	wg      sync.WaitGroup
-	stopped chan struct{}
-	err     error
+	producer sarama.SyncProducer
+	wg       sync.WaitGroup
+	stopped  chan struct{}
+	err      error
+	out      chan proto.Message
 }
 
 func New() (*Server, error) {
@@ -33,11 +34,18 @@ func New() (*Server, error) {
 	}
 
 	s := &Server{
-		Echo:    producer,
-		stopped: make(chan struct{}),
+		producer: producer,
+		stopped:  make(chan struct{}),
+		out:      make(chan proto.Message, 10),
 	}
 
 	return s, nil
+
+}
+
+func (s *Server) Out() chan<- proto.Message {
+
+	return s.out
 
 }
 
@@ -82,33 +90,37 @@ func (s *Server) Start() error {
 		defer s.wg.Done()
 
 		defer func() {
-			if err := s.Echo.Close(); err != nil {
+			if err := s.producer.Close(); err != nil {
 				s.err = fmt.Errorf("Failed to shut down producer cleanly. err: [%v]", err.Error())
 				log.Error(s.err)
 			}
 		}()
 
-		log.Info("Start loop")
+		defer close(s.out)
 
-		ticker := time.NewTicker(1 * time.Second)
+		log.Info("Start loop")
 
 		for {
 			select {
 			case <-s.stopped:
 				return
-			case <-ticker.C:
+			case message := <-s.out:
 
-				message := fmt.Sprintf("It is %s", time.Now())
+				payloadBytes, err := proto.Marshal(message)
+				if err != nil {
+					log.Warnf("Skip message due to [%s] ", err)
+					continue
+				}
 
-				partition, offset, err := s.Echo.SendMessage(&sarama.ProducerMessage{
+				partition, offset, err := s.producer.SendMessage(&sarama.ProducerMessage{
 					Topic: config.Default.Kafka.Topic,
-					Value: sarama.StringEncoder(message),
+					Value: sarama.StringEncoder(payloadBytes),
 				})
 
 				if err != nil {
 					log.Warnf("Failed to send message. err: [%s]", err)
 				} else {
-					log.Debugf("Sent message [%s] to topic [%s] partition/offset [%v / %v]",
+					log.Debugf("Sent message [%#v] to topic [%s] partition/offset [%v / %v]",
 						message, config.Default.Kafka.Topic, partition, offset,
 					)
 				}

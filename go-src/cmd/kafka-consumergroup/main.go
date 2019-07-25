@@ -10,6 +10,7 @@ import (
 	"time"
 	kafkaconsumergroup "yarencheng/one-tree/go-src/kafka-consumergroup"
 	"yarencheng/one-tree/go-src/kafka-consumergroup/config"
+	"yarencheng/one-tree/go-src/protobuf"
 
 	"flag"
 	"strings"
@@ -40,15 +41,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	producer, err := kafkaconsumergroup.New()
+	consumer, err := kafkaconsumergroup.New(&protobuf.EchoEvent{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = producer.Start()
+	err = consumer.Start()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	go func() {
+		for message := range consumer.In() {
+			log.Infof("received message [%#v]]", message)
+		}
+	}()
 
 	quit := make(chan os.Signal)
 	// kill (no param) default send syscall.SIGTERM
@@ -64,7 +71,7 @@ func main() {
 	wait := make(chan int, 1)
 
 	go func() {
-		if err := producer.Shutdown(ctx); err != nil {
+		if err := consumer.Shutdown(ctx); err != nil {
 			log.Fatal("Server Shutdown:", err)
 		}
 		close(wait)
