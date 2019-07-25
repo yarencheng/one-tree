@@ -1,6 +1,13 @@
-go-src/protobuf/*.pb.go
+**/**/protobuf/*
 
 ## helm
 **/charts/*.tgz
 
 **/.vscode/
+
+## java
+
+java-src/.classpath
+java-src/.project
+java-src/.settings/
+java-src/target/

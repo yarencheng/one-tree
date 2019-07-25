@@ -4,7 +4,7 @@ all: build test images
 	$(MAKE) reset-permission
 
 .PHONY: build
-build: go-build
+build: go-build java-build
 	$(MAKE) reset-permission
 
 .PHONY: test
@@ -32,6 +32,15 @@ go-build: protc-go
 		golang:1.12 \
 		go build -v ./...
 
+.PHONY: java-build
+java-build: protc-java
+	docker run -it --rm \
+		--workdir /src \
+		--volume $(PWD)/java-src:/src \
+		--volume $(HOME)/.m2:/root/.m2 \
+		maven \
+		mvn compile
+
 .PHONY: go-test
 go-test: protc-go
 	docker run -it --rm \
@@ -40,6 +49,15 @@ go-test: protc-go
 		--volume $(HOME)/go:/go \
 		golang:1.12 \
 		go test -v ./...
+
+.PHONY: java-test
+java-test: protc-java
+	docker run -it --rm \
+		--workdir /src \
+		--volume $(PWD)/java-src:/src \
+		--volume $(HOME)/.m2:/root/.m2 \
+		maven \
+		mvn test
 
 .PHONY: image-hello-world
 image-hello-world:
@@ -70,6 +88,16 @@ protc-go:
 		--workdir /src \
 		yarencheng/protoc \
 			--go_out=go-src \
+			protobuf/*.proto
+
+.PHONY: protc-java
+protc-java:
+	mkdir -p go-src/protobuf
+	docker run -it --rm \
+		--volume $(PWD):/src \
+		--workdir /src \
+		yarencheng/protoc \
+			--java_out=java-src/src/main/java \
 			protobuf/*.proto
 
 .PHONY: go-clean

@@ -3,6 +3,8 @@ package protobuf;
 
 import "google/protobuf/timestamp.proto";
 
+option java_package = "com.yarencheng.protobuf";
+
 message PublicKey {
 
   bytes bytes = 1;
