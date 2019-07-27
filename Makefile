@@ -116,8 +116,12 @@ delete-images:
 	docker rmi yarencheng/one-tree:kafka-consumergroup-latest || true
 
 .PHONY: protoc-clean
-protoc-clean: protoc-clean-go
+protoc-clean: protoc-clean-go protoc-clean-java
 
 .PHONY: protoc-clean-go
 protoc-clean-go:
 	rm -rvf go-src/protobuf
+
+.PHONY: protoc-clean-java
+protoc-clean-java:
+	rm -rvf java-src/src/main/java/com/yarencheng/protobuf
