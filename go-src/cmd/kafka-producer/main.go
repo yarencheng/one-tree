@@ -14,7 +14,7 @@ import (
 	"flag"
 	"strings"
 
-	"yarencheng/one-tree/go-src/protobuf"
+	"yarencheng/one-tree/go-src/pb"
 
 	"github.com/Shopify/sarama"
 	log "github.com/sirupsen/logrus"
@@ -58,7 +58,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				producer.Out() <- &protobuf.EchoEvent{
+				producer.Out() <- &pb.EchoEvent{
 					Message: time.Now().String(),
 				}
 			}

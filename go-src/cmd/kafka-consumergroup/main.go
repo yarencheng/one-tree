@@ -10,7 +10,7 @@ import (
 	"time"
 	kafkaconsumergroup "yarencheng/one-tree/go-src/kafka-consumergroup"
 	"yarencheng/one-tree/go-src/kafka-consumergroup/config"
-	"yarencheng/one-tree/go-src/protobuf"
+	"yarencheng/one-tree/go-src/pb"
 
 	"flag"
 	"strings"
@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	consumer, err := kafkaconsumergroup.New(&protobuf.EchoEvent{})
+	consumer, err := kafkaconsumergroup.New(&pb.EchoEvent{})
 	if err != nil {
 		log.Fatal(err)
 	}

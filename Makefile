@@ -88,7 +88,7 @@ protc-go:
 		--workdir /src \
 		yarencheng/protoc \
 			--go_out=go-src \
-			protobuf/*.proto
+			pb/*.proto
 
 .PHONY: protc-java
 protc-java:
@@ -98,7 +98,7 @@ protc-java:
 		--workdir /src \
 		yarencheng/protoc \
 			--java_out=java-src/src/main/java \
-			protobuf/*.proto
+			pb/*.proto
 
 .PHONY: go-clean
 go-clean:
@@ -120,8 +120,8 @@ protoc-clean: protoc-clean-go protoc-clean-java
 
 .PHONY: protoc-clean-go
 protoc-clean-go:
-	rm -rvf go-src/protobuf
+	rm -rvf go-src/pb/*
 
 .PHONY: protoc-clean-java
 protoc-clean-java:
-	rm -rvf java-src/src/main/java/com/yarencheng/protobuf
+	rm -rvf java-src/src/main/java/com/yarencheng/*

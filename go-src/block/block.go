@@ -5,16 +5,16 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"log"
-	"yarencheng/one-tree/go-src/protobuf"
+	"yarencheng/one-tree/go-src/pb"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 )
 
-func GenFirstBlock(privateKey *ecdsa.PrivateKey) protobuf.Block {
+func GenFirstBlock(privateKey *ecdsa.PrivateKey) pb.Block {
 
-	payload := protobuf.Payload{
+	payload := pb.Payload{
 		LastUpdated: ptypes.TimestampNow(),
 		Height:      0,
 		Childs:      0,
@@ -32,8 +32,8 @@ func GenFirstBlock(privateKey *ecdsa.PrivateKey) protobuf.Block {
 		log.Fatalln("Failed to sign: ", err)
 	}
 
-	block := protobuf.Block{
-		PublicKey: &protobuf.PublicKey{
+	block := pb.Block{
+		PublicKey: &pb.PublicKey{
 			Bytes: elliptic.Marshal(privateKey.PublicKey.Curve, privateKey.PublicKey.X, privateKey.PublicKey.Y),
 		},
 		Signature: sig.Bytes(),

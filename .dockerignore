@@ -7,6 +7,6 @@ docker/
 .gitattributes
 .gitignore
 
-protobuf/
+pb/
 
 helm-chart
